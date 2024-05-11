@@ -1,7 +1,7 @@
 import express, { query } from 'express';
 import cors from 'cors';
 import 'dotenv/config';
-import { MongoClient, ServerApiVersion } from 'mongodb';
+import { MongoClient, ObjectId, ServerApiVersion } from 'mongodb';
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -33,12 +33,19 @@ async function run() {
 
     const foodCollection = client.db('hungerHelperDB').collection('foods');
 
+    // foods related apis
     app.get('/featured_foods', async (req, res) => {
       const filter = { foodStatus: "available" }
       const options = {
         sort: { foodQuantity: -1 },
       };
       const result = await foodCollection.find(filter, options).limit(6).toArray();
+      res.send(result);
+    });
+
+    app.get('/food/:id', async (req, res) => {
+      const query = { _id: new ObjectId(req.params.id) };
+      const result = await foodCollection.findOne(query);
       res.send(result);
     });
 
