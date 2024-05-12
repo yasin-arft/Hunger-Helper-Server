@@ -43,7 +43,7 @@ async function run() {
 
     // foods related apis
     app.get('/featured_foods', async (req, res) => {
-      const filter = { foodStatus: "available" }
+      const filter = { foodStatus: "Available" }
       const options = {
         sort: { foodQuantity: -1 },
       };
@@ -58,8 +58,14 @@ async function run() {
     });
 
     app.get('/foods', async (req, res) => {
-      const filter = { foodStatus: "available" }
+      const filter = { foodStatus: "Available" }
       const result = await foodCollection.find(filter).toArray();
+      res.send(result);
+    });
+
+    app.post('/foods', async(req, res) => {
+      const doc = req.body;
+      const result = await foodCollection.insertOne(doc);
       res.send(result);
     });
 
