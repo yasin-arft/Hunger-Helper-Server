@@ -63,7 +63,14 @@ async function run() {
       res.send(result);
     });
 
-    app.post('/foods', async(req, res) => {
+    app.get('/my_foods', async (req, res) => {
+      const email = req.query.donatorEmail;
+      const filter = { donatorEmail: email };
+      const result = await foodCollection.find(filter).toArray();
+      res.send(result)
+    });
+
+    app.post('/foods', async (req, res) => {
       const doc = req.body;
       const result = await foodCollection.insertOne(doc);
       res.send(result);
