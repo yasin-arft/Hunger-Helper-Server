@@ -76,6 +76,16 @@ async function run() {
       res.send(result);
     });
 
+    app.patch('/food/:id', async (req, res) => {
+      const query = { _id: new ObjectId(req.params.id) };
+      const doc = req.body;
+      const updatedDoc = {
+        $set: { ...doc }
+      }
+      const result = await foodCollection.updateOne(query, updatedDoc);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
