@@ -94,7 +94,14 @@ async function run() {
     });
 
     // apis for requested food
-    app.post('/requested_foods', async(req, res) => {
+    app.get('/requested_foods', async (req, res) => {
+      const email = req.query.userEmail;
+      const filter = { userEmail: email };
+      const result = await requestedFoodCollection.find(filter).toArray();
+      res.send(result)
+    });
+
+    app.post('/requested_foods', async (req, res) => {
       const doc = req.body;
       const result = await requestedFoodCollection.insertOne(doc);
       res.send(result);
