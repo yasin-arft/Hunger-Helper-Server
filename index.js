@@ -40,6 +40,7 @@ async function run() {
     // await client.connect();
 
     const foodCollection = client.db('hungerHelperDB').collection('foods');
+    const requestedFoodCollection = client.db('hungerHelperDB').collection('requestedFoods');
 
     // foods related apis
     app.get('/featured_foods', async (req, res) => {
@@ -89,7 +90,13 @@ async function run() {
     app.delete('/food/:id', async (req, res) => {
       const query = { _id: new ObjectId(req.params.id) };
       const result = await foodCollection.deleteOne(query);
-      console.log(query);
+      res.send(result);
+    });
+
+    // apis for requested food
+    app.post('/requested_foods', async(req, res) => {
+      const doc = req.body;
+      const result = await requestedFoodCollection.insertOne(doc);
       res.send(result);
     });
 
