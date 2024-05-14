@@ -41,18 +41,15 @@ app.use(cookieParser());
 // verify token middleware 
 const verifyToken = async (req, res, next) => {
   const token = req.cookies.token;
-  console.log('value of token in middle ware', token);
   if (!token) {
     return res.status(401).send({ message: 'not authorized' });
   };
 
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
     if (error) {
-      console.log(error);
       return res.status(401).send({ message: 'unauthorized' });
     }
-
-    console.log('decode value', decoded);
+    
     req.user = decoded;
     next();
   })
@@ -121,13 +118,13 @@ async function run() {
       res.send(result)
     });
 
-    app.post('/foods', async (req, res) => {
+    app.post('/foods', verifyToken, async (req, res) => {
       const doc = req.body;
       const result = await foodCollection.insertOne(doc);
       res.send(result);
     });
 
-    app.patch('/food/:id', async (req, res) => {
+    app.patch('/food/:id', verifyToken, async (req, res) => {
       const query = { _id: new ObjectId(req.params.id) };
       const doc = req.body;
       const updatedDoc = {
@@ -137,21 +134,21 @@ async function run() {
       res.send(result);
     });
 
-    app.delete('/food/:id', async (req, res) => {
+    app.delete('/food/:id', verifyToken, async (req, res) => {
       const query = { _id: new ObjectId(req.params.id) };
       const result = await foodCollection.deleteOne(query);
       res.send(result);
     });
 
     // apis for requested food
-    app.get('/requested_foods', async (req, res) => {
+    app.get('/requested_foods', verifyToken, async (req, res) => {
       const email = req.query.userEmail;
       const filter = { userEmail: email };
       const result = await requestedFoodCollection.find(filter).toArray();
       res.send(result)
     });
 
-    app.post('/requested_foods', async (req, res) => {
+    app.post('/requested_foods', verifyToken, async (req, res) => {
       const doc = req.body;
       const result = await requestedFoodCollection.insertOne(doc);
       res.send(result);
