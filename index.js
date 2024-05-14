@@ -35,9 +35,30 @@ app.use(cors({
   ],
   credentials: true,
 }));
-
 app.use(express.json());
+app.use(cookieParser());
 
+// verify token middleware 
+const verifyToken = async (req, res, next) => {
+  const token = req.cookies.token;
+  console.log('value of token in middle ware', token);
+  if (!token) {
+    return res.status(401).send({ message: 'not authorized' });
+  };
+
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
+    if (error) {
+      console.log(error);
+      return res.status(401).send({ message: 'unauthorized' });
+    }
+
+    console.log('decode value', decoded);
+    req.user = decoded;
+    next();
+  })
+}
+
+// root path
 app.get('/', (req, res) => {
   res.send('Hunger Helper server is running');
 });
@@ -62,7 +83,6 @@ app.post("/logout", async (req, res) => {
     .clearCookie("token", { ...cookieOptions, maxAge: 0 })
     .send({ success: true });
 });
-
 
 async function run() {
   try {
@@ -94,7 +114,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/my_foods', async (req, res) => {
+    app.get('/my_foods', verifyToken, async (req, res) => {
       const email = req.query.donatorEmail;
       const filter = { donatorEmail: email };
       const result = await foodCollection.find(filter).toArray();
