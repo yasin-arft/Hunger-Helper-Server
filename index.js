@@ -1,6 +1,8 @@
 import express, { query } from 'express';
 import cors from 'cors';
 import 'dotenv/config';
+import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
 import { MongoClient, ObjectId, ServerApiVersion } from 'mongodb';
 
 const app = express();
@@ -18,6 +20,12 @@ const client = new MongoClient(uri, {
   }
 });
 
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+};
+
 // middlewares
 app.use(cors({
   origin: [
@@ -33,6 +41,28 @@ app.use(express.json());
 app.get('/', (req, res) => {
   res.send('Hunger Helper server is running');
 });
+
+//create Token
+app.post("/jwt", async (req, res) => {
+  const user = req.body;
+  console.log("user for token", user);
+  const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+  console.log(token);
+
+  res
+    .cookie("token", token, cookieOptions)
+    .send({ success: true });
+});
+
+//clear Token
+app.post("/logout", async (req, res) => {
+  const user = req.body;
+  console.log("logging out", user);
+  res
+    .clearCookie("token", { ...cookieOptions, maxAge: 0 })
+    .send({ success: true });
+});
+
 
 async function run() {
   try {
