@@ -102,9 +102,19 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/foods', async (req, res) => {
-      const filter = { foodStatus: "Available" }
-      const result = await foodCollection.find(filter).toArray();
+    app.get('/available_foods', async (req, res) => {
+      const sortOption = parseInt(req.query.sort);
+      console.log(sortOption);
+      console.log(typeof(sortOption));
+      const filter = { foodStatus: "Available" };
+      let options = {};
+      if (sortOption) {
+        options = {
+          sort: { expiredDate: sortOption },
+        };
+      }
+       
+      const result = await foodCollection.find(filter,options).toArray();
       res.send(result);
     });
 
