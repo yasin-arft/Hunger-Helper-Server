@@ -64,7 +64,6 @@ app.get('/', (req, res) => {
 app.post("/jwt", async (req, res) => {
   const user = req.body;
   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
-  console.log(token);
 
   res
     .cookie("token", token, cookieOptions)
@@ -104,8 +103,6 @@ async function run() {
 
     app.get('/available_foods', async (req, res) => {
       const sortOption = parseInt(req.query.sort);
-      console.log(sortOption);
-      console.log(typeof(sortOption));
       const filter = { foodStatus: "Available" };
       let options = {};
       if (sortOption) {
@@ -113,8 +110,8 @@ async function run() {
           sort: { expiredDate: sortOption },
         };
       }
-       
-      const result = await foodCollection.find(filter,options).toArray();
+
+      const result = await foodCollection.find(filter, options).toArray();
       res.send(result);
     });
 
