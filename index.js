@@ -49,7 +49,7 @@ const verifyToken = async (req, res, next) => {
     if (error) {
       return res.status(401).send({ message: 'unauthorized' });
     }
-    
+
     req.user = decoded;
     next();
   })
@@ -63,7 +63,6 @@ app.get('/', (req, res) => {
 //create Token
 app.post("/jwt", async (req, res) => {
   const user = req.body;
-  console.log("user for token", user);
   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
   console.log(token);
 
@@ -74,8 +73,6 @@ app.post("/jwt", async (req, res) => {
 
 //clear Token
 app.post("/logout", async (req, res) => {
-  const user = req.body;
-  console.log("logging out", user);
   res
     .clearCookie("token", { ...cookieOptions, maxAge: 0 })
     .send({ success: true });
@@ -99,7 +96,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/food/:id', async (req, res) => {
+    app.get('/food/:id', verifyToken, async (req, res) => {
       const query = { _id: new ObjectId(req.params.id) };
       const result = await foodCollection.findOne(query);
       res.send(result);
@@ -113,6 +110,9 @@ async function run() {
 
     app.get('/my_foods', verifyToken, async (req, res) => {
       const email = req.query.donatorEmail;
+      if (req.user.userEmail !== email) {
+        return res.status(403).send('forbidden');
+      }
       const filter = { donatorEmail: email };
       const result = await foodCollection.find(filter).toArray();
       res.send(result)
